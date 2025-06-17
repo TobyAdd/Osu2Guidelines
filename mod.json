@@ -10,5 +10,8 @@
 	"name": "Osu2Guidelines",
 	"version": "v1.0.0",
 	"developer": "TobyAdd",
-	"description": ""
+	"description": "Turn your favorite osu! maps into guidelines for GD level building",
+	"links": {
+        "source": "https://github.com/TobyAdd/Osu2Guidelines"
+    }
 }

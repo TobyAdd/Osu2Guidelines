@@ -1,3 +1,5 @@
-# Template Mod
+# Osu2Guidelines
+A utility that adds a button to the CreateGuidelinesLayer to convert osu! hit objects into GD guidelines
 
-Edit about.md to change this
+# Bug Report
+If you find a bug in the mod, feel free to report it in the GitHub Issues tab
