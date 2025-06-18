@@ -37,7 +37,7 @@ class $modify(MyCreateGuidelinesLayer, CreateGuidelinesLayer) {
             buttonImport, 
             [this](CCMenuItemSpriteExtra*) { handleImportClick(); }
         );
-        
+
         buttonImportClick->setPosition({145, -95});
         m_buttonMenu->addChild(buttonImportClick);
     }
@@ -64,7 +64,7 @@ class $modify(MyCreateGuidelinesLayer, CreateGuidelinesLayer) {
         OsuParser parser;
         
         if (parser.parseFile(path)) {
-            m_pendingGuidelineString = parser.generateFormattedString();
+            m_pendingGuidelineString = parser.generateGuidelinesString();
             m_hasImportedData = true;
             onRecord(nullptr);
         } else {

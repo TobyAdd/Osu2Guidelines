@@ -1,3 +1,4 @@
+#include <Geode/Geode.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -40,14 +41,62 @@ private:
         
         if (parts.size() >= 8) {
             TimingPoint tp;
-            tp.time = std::stoi(parts[0]);
-            tp.beatLength = std::stod(parts[1]);
-            tp.meter = std::stoi(parts[2]);
-            tp.sampleSet = std::stoi(parts[3]);
-            tp.sampleIndex = std::stoi(parts[4]);
-            tp.volume = std::stoi(parts[5]);
-            tp.uninherited = (std::stoi(parts[6]) == 1);
-            tp.effects = std::stoi(parts[7]);
+            
+            auto timeResult = geode::utils::numFromString<int>(parts[0]);
+            if (timeResult.isErr()) {
+                geode::log::error("Invalid timing point time: {}", line);
+                return;
+            }
+            tp.time = timeResult.unwrap();
+            
+            auto beatLengthResult = geode::utils::numFromString<double>(parts[1]);
+            if (beatLengthResult.isErr()) {
+                geode::log::error("Invalid timing point beat length: {}", line);
+                return;
+            }
+            tp.beatLength = beatLengthResult.unwrap();
+            
+            auto meterResult = geode::utils::numFromString<int>(parts[2]);
+            if (meterResult.isErr()) {
+                geode::log::error("Invalid timing point meter: {}", line);
+                return;
+            }
+            tp.meter = meterResult.unwrap();
+            
+            auto sampleSetResult = geode::utils::numFromString<int>(parts[3]);
+            if (sampleSetResult.isErr()) {
+                geode::log::error("Invalid timing point sample set: {}", line);
+                return;
+            }
+            tp.sampleSet = sampleSetResult.unwrap();
+            
+            auto sampleIndexResult = geode::utils::numFromString<int>(parts[4]);
+            if (sampleIndexResult.isErr()) {
+                geode::log::error("Invalid timing point sample index: {}", line);
+                return;
+            }
+            tp.sampleIndex = sampleIndexResult.unwrap();
+            
+            auto volumeResult = geode::utils::numFromString<int>(parts[5]);
+            if (volumeResult.isErr()) {
+                geode::log::error("Invalid timing point volume: {}", line);
+                return;
+            }
+            tp.volume = volumeResult.unwrap();
+            
+            auto uninheritedResult = geode::utils::numFromString<int>(parts[6]);
+            if (uninheritedResult.isErr()) {
+                geode::log::error("Invalid timing point uninherited: {}", line);
+                return;
+            }
+            tp.uninherited = (uninheritedResult.unwrap() == 1);
+            
+            auto effectsResult = geode::utils::numFromString<int>(parts[7]);
+            if (effectsResult.isErr()) {
+                geode::log::error("Invalid timing point effects: {}", line);
+                return;
+            }
+            tp.effects = effectsResult.unwrap();
             
             timingPoints.push_back(tp);
         }
@@ -80,10 +129,33 @@ private:
         
         if (parts.size() < 4) return;
         
-        int x = std::stoi(parts[0]);
-        int y = std::stoi(parts[1]);
-        int time = std::stoi(parts[2]);
-        int type = std::stoi(parts[3]);
+        auto xResult = geode::utils::numFromString<int>(parts[0]);
+        if (xResult.isErr()) {
+            geode::log::error("Invalid hit object x coordinate: {}", line);
+            return;
+        }
+        int x = xResult.unwrap();
+        
+        auto yResult = geode::utils::numFromString<int>(parts[1]);
+        if (yResult.isErr()) {
+            geode::log::error("Invalid hit object y coordinate: {}", line);
+            return;
+        }
+        int y = yResult.unwrap();
+        
+        auto timeResult = geode::utils::numFromString<int>(parts[2]);
+        if (timeResult.isErr()) {
+            geode::log::error("Invalid hit object time: {}", line);
+            return;
+        }
+        int time = timeResult.unwrap();
+        
+        auto typeResult = geode::utils::numFromString<int>(parts[3]);
+        if (typeResult.isErr()) {
+            geode::log::error("Invalid hit object type: {}", line);
+            return;
+        }
+        int type = typeResult.unwrap();
         
         double seconds = time / 1000.0;
         
@@ -95,8 +167,20 @@ private:
             
             if (parts.size() >= 8) {
                 std::string sliderPath = parts[5];
-                int repeats = std::stoi(parts[6]);
-                double pixelLength = std::stod(parts[7]);
+                
+                auto repeatsResult = geode::utils::numFromString<int>(parts[6]);
+                if (repeatsResult.isErr()) {
+                    geode::log::error("Invalid slider repeats: {}", line);
+                    return;
+                }
+                int repeats = repeatsResult.unwrap();
+                
+                auto pixelLengthResult = geode::utils::numFromString<double>(parts[7]);
+                if (pixelLengthResult.isErr()) {
+                    geode::log::error("Invalid slider pixel length: {}", line);
+                    return;
+                }
+                double pixelLength = pixelLengthResult.unwrap();
                 
                 double beatLength = getCurrentBeatLength(time);
                 double sliderMultiplier = 1.4;
@@ -117,7 +201,12 @@ private:
             clickTimes.push_back({seconds, "Spinner_Start"});
             
             if (parts.size() >= 6) {
-                int endTime = std::stoi(parts[5]);
+                auto endTimeResult = geode::utils::numFromString<int>(parts[5]);
+                if (endTimeResult.isErr()) {
+                    geode::log::error("Invalid spinner end time: {}", line);
+                    return;
+                }
+                int endTime = endTimeResult.unwrap();
                 double endSeconds = endTime / 1000.0;
                 clickTimes.push_back({endSeconds, "Spinner_End"});
             }
@@ -129,7 +218,12 @@ private:
                 std::string endTimeStr = parts[5];
                 size_t colonPos = endTimeStr.find(':');
                 if (colonPos != std::string::npos) {
-                    int endTime = std::stoi(endTimeStr.substr(0, colonPos));
+                    auto endTimeResult = geode::utils::numFromString<int>(endTimeStr.substr(0, colonPos));
+                    if (endTimeResult.isErr()) {
+                        geode::log::error("Invalid hold note end time: {}", line);
+                        return;
+                    }
+                    int endTime = endTimeResult.unwrap();
                     double endSeconds = endTime / 1000.0;
                     clickTimes.push_back({endSeconds, "Hold_End"});
                 }
@@ -137,13 +231,44 @@ private:
         }
     }
     
-public:
-    bool parseFile(const std::filesystem::path& filepath) {
-        std::ifstream file(filepath);
-        if (!file.is_open()) {
-            std::cerr << "Failed to open file: " << filepath << std::endl;
+    bool isValidOsuFile(const std::filesystem::path& filepath) {
+        if (filepath.extension() != ".osu") {
             return false;
         }
+        
+        std::ifstream file(filepath);
+        if (!file.is_open()) {
+            return false;
+        }
+        
+        std::string firstLine;
+        if (!std::getline(file, firstLine)) {
+            return false;
+        }
+        
+        if (firstLine.find("osu file format") == std::string::npos) {
+            return false;
+        }
+        
+        file.close();
+        return true;
+    }
+
+public:
+    bool parseFile(const std::filesystem::path& filepath) {
+        if (!isValidOsuFile(filepath)) {
+            geode::log::error("Invalid .osu file: {}", filepath.string());
+            return false;
+        }
+        
+        std::ifstream file(filepath);
+        if (!file.is_open()) {
+            geode::log::error("Failed to open file: {}", filepath.string());
+            return false;
+        }
+        
+        timingPoints.clear();
+        clickTimes.clear();
         
         std::string line;
         std::string currentSection = "";
@@ -179,15 +304,14 @@ public:
     }
     
     void printClickTimes() const {
-        std::cout << "Click times (in seconds):\n";
-        std::cout << "========================\n";
+        geode::log::debug("Click times (in seconds):");
+        geode::log::debug("========================");
         
         for (const auto& click : clickTimes) {
-            std::cout << std::fixed << std::setprecision(3) 
-                      << click.seconds << "s - " << click.type << std::endl;
+            geode::log::debug("{:.3f}s - {}", click.seconds, click.type);
         }
         
-        std::cout << "\nTotal events: " << clickTimes.size() << std::endl;
+        geode::log::debug("Total events: {}", clickTimes.size());
     }
     
     std::vector<double> getClickTimesOnly() const {
@@ -199,14 +323,13 @@ public:
     }
     
     void printSimpleClickTimes() const {
-        std::cout << "Click times:\n";
+        geode::log::debug("Click times:");
         for (const auto& click : clickTimes) {
-            std::cout << std::fixed << std::setprecision(3) 
-                      << click.seconds << std::endl;
+            geode::log::debug("{:.3f}", click.seconds);
         }
     }
     
-    std::string generateFormattedString() const {
+    std::string generateGuidelinesString() const {
         std::stringstream ss;
         
         for (size_t i = 0; i < clickTimes.size(); ++i) {
@@ -224,9 +347,9 @@ public:
         return ss.str();
     }
     
-    void printFormattedString() const {
-        std::cout << "Formatted string:\n";
-        std::cout << generateFormattedString() << std::endl;
+    void printGuidelinesString() const {
+        geode::log::debug("Guidelines string:");
+        geode::log::debug("{}", generateGuidelinesString());
     }
 };
 
@@ -254,7 +377,7 @@ public:
 //         std::cout << "Formatted string:\n";
 //         std::cout << std::string(50, '=') << "\n";
         
-//         parser.printFormattedString();
+//         parser.printGuidelinesString();
         
 //     } else {
 //         std::cout << "Error processing file!" << std::endl;
