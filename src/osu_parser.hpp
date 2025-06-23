@@ -329,20 +329,22 @@ public:
         }
     }
     
-    std::string generateGuidelinesString() const {
+    std::string generateGuidelinesString(double msOffset = 0.0) const {
         std::stringstream ss;
         
         for (size_t i = 0; i < clickTimes.size(); ++i) {
-            double milliseconds = clickTimes[i].seconds * 1000.0;
+            double milliseconds = (clickTimes[i].seconds * 1000.0) + msOffset;
             
-            ss << std::fixed << std::setprecision(2) << milliseconds / 1000.0;
+            if (milliseconds < 0.0) milliseconds = 0.0;
+
+            ss << std::fixed << std::setprecision(6) << milliseconds / 1000.0;
             ss << "~0";
-            
+
             if (i < clickTimes.size() - 1) {
                 ss << "~";
             }
         }
-        
+
         ss << "~";
         return ss.str();
     }

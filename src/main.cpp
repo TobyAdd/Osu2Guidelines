@@ -6,6 +6,7 @@ using namespace geode::prelude;
 
 std::string m_pendingGuidelineString;
 bool m_hasImportedData = false;
+double m_offset = 0.0;
 
 class $modify(MyCreateGuidelinesLayer, CreateGuidelinesLayer) {
     bool init(CustomSongDelegate* p0, AudioGuidelinesType p1) {
@@ -14,6 +15,7 @@ class $modify(MyCreateGuidelinesLayer, CreateGuidelinesLayer) {
         }
 
         createImportButton();
+        createOffsetInput();
         return true;
     }
 
@@ -41,6 +43,19 @@ class $modify(MyCreateGuidelinesLayer, CreateGuidelinesLayer) {
         buttonImportClick->setPosition({145, -95});
         m_buttonMenu->addChild(buttonImportClick);
     }
+
+    void createOffsetInput() {
+        auto input = TextInput::create(80.f, "MS Offset (-0.0)", "chatFont.fnt");
+        if (m_offset != 0.0)
+            input->setString(fmt::format("{}", m_offset));
+        input->setFilter("1234567890.-");
+        input->setCallback([](const std::string& text) {
+            auto msOffsetResult = geode::utils::numFromString<double>(text);
+            m_offset = msOffsetResult.isErr() ? 0.f : msOffsetResult.unwrap();
+        });
+        input->setPosition({145.f, -60.f});
+        m_buttonMenu->addChild(input);
+    }
 	
     void handleImportClick() {
         static const geode::utils::file::FilePickOptions::Filter OSU_FILTER = {
@@ -64,7 +79,7 @@ class $modify(MyCreateGuidelinesLayer, CreateGuidelinesLayer) {
         OsuParser parser;
         
         if (parser.parseFile(path)) {
-            m_pendingGuidelineString = parser.generateGuidelinesString();
+            m_pendingGuidelineString = parser.generateGuidelinesString(m_offset);
             m_hasImportedData = true;
             onRecord(nullptr);
         } else {
